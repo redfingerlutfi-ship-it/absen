@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Roster - Admin Panel</title>
+    <style>
+        :root {
+            --primary: #dc2626;         /* Merah Utama */
+            --primary-hover: #b91c1c;   /* Merah Gelap */
+            --primary-light: #fef2f2;   /* Merah Sangat Muda */
+            --success: #059669;
+            --danger: #dc2626;
+            --danger-bg: rgba(254, 242, 242, 0.8);
+            
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            
+            /* Konsep Liquid Glassmorphism */
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 16px 32px 0 rgba(220, 38, 38, 0.08);
+            --card-radius: 20px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        
+        body { 
+            background: linear-gradient(135deg, #fef2f2 0%, #f8fafc 50%, #fee2e2 100%);
+            background-attachment: fixed;
+            color: var(--text-main); 
+            padding: 40px 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh; 
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 1150px; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(14px); 
+            -webkit-backdrop-filter: blur(14px);
+            padding: 35px; 
+            border-radius: var(--card-radius); 
+            box-shadow: var(--glass-shadow); 
+            border: 1px solid var(--glass-border);
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-section { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            border-bottom: 2px solid rgba(220, 38, 38, 0.1); 
+            padding-bottom: 20px; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+        }
+        
+        h1 { 
+            font-size: 1.6rem; 
+            color: var(--primary); 
+            font-weight: 800; 
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-nav { display: flex; align-items: center; gap: 12px; }
+
+        .btn-back { 
+            background: var(--primary-light); 
+            color: var(--primary); 
+            border: 1px solid rgba(220, 38, 38, 0.2); 
+            padding: 8px 16px; 
+            border-radius: 10px; 
+            font-size: 0.88rem; 
+            font-weight: 600; 
+            text-decoration: none; 
+            display: inline-flex; align-items: center; 
+            transition: all 0.2s; 
+        }
+        .btn-back:hover { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); }
+
+        /* Form Tambah Roster */
+        .add-roster-section { 
+            background: rgba(255, 255, 255, 0.7); 
+            padding: 20px; 
+            border-radius: 14px; 
+            margin-bottom: 25px; 
+            border: 1px solid rgba(220, 38, 38, 0.1); 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; 
+            gap: 12px; 
+            align-items: center; 
+        }
+
+        .add-roster-section input, .add-roster-section select { 
+            width: 100%; 
+            padding: 11px 14px; 
+            border: 1.5px solid #e5e7eb; 
+            border-radius: 10px; 
+            font-size: 0.88rem; 
+            outline: none; 
+            background: #ffffff; 
+            transition: 0.2s; 
+        }
+        .add-roster-section input:focus, .add-roster-section select:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); 
+        }
+
+        .btn { 
+            background-color: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 11px 20px; 
+            font-size: 0.92rem; 
+            font-weight: 600; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            white-space: nowrap; 
+            height: 44px; 
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+        }
+        .btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+        .btn-danger-soft { 
+            background-color: var(--danger-bg); 
+            color: var(--danger); 
+            border: 1px solid rgba(220, 38, 38, 0.2); 
+            padding: 6px 12px; 
+            font-size: 0.82rem; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: 0.2s;
+        }
+        .btn-danger-soft:hover { background: var(--danger); color: white; }
+
+        /* Tabel Roster */
+        .admin-card { 
+            background: rgba(255, 255, 255, 0.8); 
+            padding: 24px; 
+            border-radius: 16px; 
+            border: 1px solid rgba(220, 38, 38, 0.1); 
+            margin-bottom: 25px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+        }
+        .admin-card h3 { font-size: 1.15rem; color: var(--primary); margin-bottom: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        .table-container { border: 1px solid rgba(220, 38, 38, 0.1); border-radius: 12px; overflow-x: auto; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 650px; }
+        th, td { padding: 15px 18px; border-bottom: 1px solid #f3f4f6; font-size: 0.92rem; vertical-align: middle; }
+        th { background-color: #fcfcfc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.6px; border-bottom: 2px solid #e5e7eb; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: rgba(254, 242, 242, 0.3); }
+
+        .day-badge { display: inline-block; font-size: 0.78rem; color: var(--primary); background: var(--primary-light); padding: 4px 10px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(220, 38, 38, 0.15); }
+        .time-badge { font-size: 0.85rem; font-weight: 600; color: #047857; background: #ecfdf5; padding: 4px 10px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1>📅 Kelola Roster Pelajaran</h1>
+            <div class="admin-nav">
+                <a href="admin.html" class="btn-back">⬅ Kembali ke Admin</a>
+            </div>
+        </div>
+
+        <!-- Form Tambah Roster -->
+        <div class="add-roster-section">
+            <select id="rosterDay">
+                <option value="Senin">Senin</option>
+                <option value="Selasa">Selasa</option>
+                <option value="Rabu">Rabu</option>
+                <option value="Kamis">Kamis</option>
+                <option value="Jumat">Jumat</option>
+                <option value="Sabtu">Sabtu</option>
+                <option value="Minggu">Minggu</option>
+            </select>
+            <input type="text" id="rosterSubject" placeholder="Nama Mata Pelajaran...">
+            <input type="text" id="rosterTime" placeholder="Jam (Cth: 08:00 - 09:30)...">
+            <button class="btn" onclick="addRoster()">+ Tambah Roster</button>
+        </div>
+
+        <!-- Tabel Roster Utama -->
+        <div class="admin-card" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+            <h3 style="margin-bottom: 12px;">📋 Daftar Jadwal Pelajaran</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="10%">No</th>
+                            <th width="25%">Hari</th>
+                            <th width="35%">Mata Pelajaran</th>
+                            <th width="20%">Jam</th>
+                            <th width="10%" style="text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rosterTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (localStorage.getItem('adminLoggedIn') !== 'true') { 
+            window.location.href = 'index.html'; 
+        }
+
+        let defaultRoster = [
+            { id: 1, day: "Senin", subject: "Matematika", time: "08:00 - 09:30" },
+            { id: 2, day: "Selasa", subject: "Bahasa Indonesia", time: "08:00 - 09:30" },
+            { id: 3, day: "Rabu", subject: "Bahasa Inggris", time: "08:00 - 09:30" },
+            { id: 4, day: "Kamis", subject: "Ilmu Pengetahuan Alam", time: "08:00 - 09:30" },
+            { id: 5, day: "Jumat", subject: "Pendidikan Agama", time: "08:00 - 09:30" }
+        ];
+
+        let rosterList = JSON.parse(localStorage.getItem('rosterList')) || defaultRoster;
+
+        function saveRoster() {
+            localStorage.setItem('rosterList', JSON.stringify(rosterList));
+        }
+
+        function renderRoster() {
+            const tableBody = document.getElementById('rosterTableBody');
+            tableBody.innerHTML = '';
+
+            if (rosterList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 25px;">Belum ada jadwal roster.</td></tr>`;
+                return;
+            }
+
+            rosterList.forEach((item, index) => {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><span class="day-badge">${item.day}</span></td>
+                    <td style="font-weight: 600;">${item.subject}</td>
+                    <td><span class="time-badge">⏰ ${item.time}</span></td>
+                    <td style="text-align: center;">
+                        <button class="btn-danger-soft" onclick="deleteRoster(${item.id})">Hapus</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function addRoster() {
+            let day = document.getElementById('rosterDay').value;
+            let subject = document.getElementById('rosterSubject').value.trim();
+            let time = document.getElementById('rosterTime').value.trim();
+
+            if (!subject || !time) {
+                alert('Nama Mata Pelajaran dan Jam wajib diisi!');
+                return;
+            }
+
+            let newObj = {
+                id: Date.now(),
+                day: day,
+                subject: subject,
+                time: time
+            };
+
+            rosterList.push(newObj);
+            saveRoster();
+            renderRoster();
+
+            document.getElementById('rosterSubject').value = '';
+            document.getElementById('rosterTime').value = '';
+        }
+
+        window.deleteRoster = function(id) {
+            if (confirm('Yakin ingin menghapus jadwal roster ini?')) {
+                rosterList = rosterList.filter(item => item.id !== id);
+                saveRoster();
+                renderRoster();
+            }
+        };
+
+        renderRoster();
+    </script>
+</body>
+</html>
