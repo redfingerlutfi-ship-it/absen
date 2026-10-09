@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Absensi Global</title>
+    <style>
+        :root {
+            --primary: #dc2626;         
+            --primary-hover: #b91c1c;   
+            --primary-light: #fef2f2;   
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --card-radius: 24px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        
+        body { 
+            position: relative;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+            overflow: hidden;
+            background-color: #0f172a;
+        }
+
+        .bg-video {
+            position: absolute;
+            top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            z-index: -2;
+        }
+
+        .bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(3px);
+            z-index: -1;
+        }
+
+        .login-card { 
+            width: 100%; max-width: 400px; 
+            background: rgba(255, 255, 255, 0.12); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            padding: 35px; 
+            border-radius: var(--card-radius); 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.25); 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative; overflow: hidden;
+        }
+
+        .login-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.15) 50%, transparent 55%);
+            pointer-events: none; transform: rotate(30deg);
+        }
+
+        .login-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 25px; }
+        .login-header img { width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .login-header h2 { color: #ffffff; font-size: 1.5rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.2); margin: 0; }
+        
+        .form-group { margin-bottom: 20px; position: relative; z-index: 1; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #f3f4f6; margin-bottom: 8px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
+        .form-group input { 
+            width: 100%; padding: 12px 14px; 
+            border: 1.5px solid rgba(255, 255, 255, 0.3); 
+            border-radius: 12px; font-size: 0.95rem; outline: none; 
+            background: rgba(255, 255, 255, 0.15); color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        .form-group input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .form-group input:focus { 
+            border-color: #f87171; background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn { 
+            background-color: var(--primary); color: white; border: none; 
+            padding: 12px 20px; font-size: 1rem; font-weight: 600; 
+            border-radius: 12px; cursor: pointer; width: 100%; 
+            transition: all 0.2s ease; position: relative; z-index: 1;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        }
+        .btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(220, 38, 38, 0.6); }
+        .info-text { text-align: center; margin-top: 15px; font-size: 0.78rem; color: #e5e7eb; position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop playsinline class="bg-video">
+        <source src="latar.mp4" type="video/mp4">
+        Browser Anda tidak mendukung pemutaran video latar belakang.
+    </video>
+    <div class="bg-overlay"></div>
+
+    <div class="login-card">
+        <div class="login-header">
+            <img src="logo.png" alt="Logo Absensi Global">
+            <h2>Login Absensi Global</h2>
+        </div>
+        <div class="form-group">
+            <label>Username / NIS / User ID:</label>
+            <input type="text" id="loginId" placeholder="Masukkan ID atau username...">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="loginPass" placeholder="Masukkan password...">
+        </div>
+        <button class="btn" onclick="handleUnifiedLogin()">Masuk</button>
+        <div class="info-text">Sistem otomatis mendeteksi akun Admin atau Siswa</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBABI21WSzwx0uVln_SkLlHrLWuUgJyclQ",
+            authDomain: "absen-pemain.firebaseapp.com",
+            projectId: "absen-pemain",
+            storageBucket: "absen-pemain.firebasestorage.app",
+            messagingSenderId: "714361263502",
+            appId: "1:714361263502:web:ab6fc668eb4d2b09b680df",
+            measurementId: "G-RF6G474HSY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.handleUnifiedLogin = async function() {
+            let inputId = document.getElementById('loginId').value.trim();
+            let inputPass = document.getElementById('loginPass').value.trim();
+
+            if (!inputId || !inputPass) {
+                alert('ID dan Password wajib diisi!');
+                return;
+            }
+
+            try {
+                // 1. Cek Login Admin (Default atau dari Firebase settings/adminProfile)
+                if (inputId === "admin" && inputPass === "admin123") {
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    window.location.href = 'admin.html';
+                    return;
+                }
+
+                const adminRef = doc(db, "settings", "adminProfile");
+                const adminSnap = await getDoc(adminRef);
+                if (adminSnap.exists()) {
+                    let adData = adminSnap.data();
+                    if (adData.username && adData.username === inputId && String(adData.password) === String(inputPass)) {
+                        localStorage.setItem('adminLoggedIn', 'true');
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                }
+
+                // Cek ke koleksi admins jika ada
+                const adminQuery = query(collection(db, "admins"), where("username", "==", String(inputId)));
+                const adminSnapshot = await getDocs(adminQuery);
+                if (!adminSnapshot.empty) {
+                    let adminData = adminSnapshot.docs[0].data();
+                    if (String(adminData.password).trim() === String(inputPass)) {
+                        localStorage.setItem('adminLoggedIn', 'true');
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                }
+
+                // 2. Cek Login Siswa dari koleksi "siswa"
+                let studentDocRef = doc(db, "siswa", String(inputId));
+                let studentSnap = await getDoc(studentDocRef);
+
+                if (studentSnap.exists()) {
+                    let studentData = studentSnap.data();
+                    let realPass = studentData.password || studentData.pass || '';
+                    if (String(realPass).trim() === String(inputPass)) {
+                        let uniqueId = studentData.userId || studentData.nis || studentData.username || inputId;
+                        localStorage.setItem('studentLoggedInId', String(uniqueId));
+                        window.location.href = 'siswa.html';
+                        return;
+                    } else {
+                        alert('Password Siswa salah!');
+                        return;
+                    }
+                } else {
+                    const querySnapshot = await getDocs(collection(db, "siswa"));
+                    let foundStudent = null;
+                    querySnapshot.forEach(docSnap => {
+                        let data = docSnap.data();
+                        let uId = data.userId || data.nis || data.username || docSnap.id;
+                        if (String(uId).toLowerCase() === String(inputId).toLowerCase()) {
+                            foundStudent = { id: docSnap.id, ...data };
+                        }
+                    });
+
+                    if (foundStudent) {
+                        let realPass = foundStudent.password || foundStudent.pass || '';
+                        if (String(realPass).trim() === String(inputPass)) {
+                            let uniqueId = foundStudent.userId || foundStudent.nis || foundStudent.username || foundStudent.id;
+                            localStorage.setItem('studentLoggedInId', String(uniqueId));
+                            window.location.href = 'siswa.html';
+                            return;
+                        } else {
+                            alert('Password Siswa salah!');
+                            return;
+                        }
+                    }
+                }
+
+                alert('Akun tidak ditemukan (Username / ID tidak terdaftar di database)!');
+
+            } catch (e) {
+                alert('Terjadi kesalahan koneksi ke server: ' + e.message);
+                console.error("Error detail:", e);
+            }
+        };
+    </script>
+</body>
+</html>

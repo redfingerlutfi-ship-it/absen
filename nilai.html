@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Kelola Nilai & OVR Pemain</title>
+    <style>
+        :root {
+            --primary: #dc2626;         
+            --primary-hover: #b91c1c;   
+            --primary-light: #fef2f2;   
+            --success: #059669;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.08);
+            --card-radius: 18px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        
+        body { 
+            background: linear-gradient(135deg, #fef2f2 0%, #f8fafc 50%, #fee2e2 100%);
+            background-attachment: fixed;
+            color: var(--text-main); 
+            padding: 24px 15px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh; 
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 1050px; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            padding: 28px; 
+            border-radius: var(--card-radius); 
+            box-shadow: var(--glass-shadow); 
+            border: 1px solid var(--glass-border);
+        }
+
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; border-bottom: 2px solid #f1f5f9; padding-bottom: 14px; flex-wrap: wrap; gap: 12px; }
+        h1 { font-size: 1.35rem; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 8px; }
+
+        .btn-back { background: #f1f5f9; color: var(--text-main); border: 1px solid #cbd5e1; padding: 7px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 600; text-decoration: none; display: inline-flex; transition: background 0.2s; }
+        .btn-back:hover { background: #e2e8f0; }
+
+        .admin-card { background: rgba(255, 255, 255, 0.85); padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .admin-card h3 { font-size: 1.05rem; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+        .subtitle { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px; }
+
+        .table-container { border: 1px solid #e2e8f0; border-radius: 12px; overflow-x: auto; background: #ffffff; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; vertical-align: middle; }
+        th { background-color: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; }
+
+        tr.student-row { cursor: pointer; transition: background 0.15s; }
+        tr.student-row:hover { background-color: #fef2f2; }
+
+        .student-profile { display: flex; align-items: center; gap: 12px; }
+        .student-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(220, 38, 38, 0.2); background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary); flex-shrink: 0; font-size: 0.9rem; }
+        .user-id-badge { display: inline-block; font-size: 0.68rem; color: var(--primary); background: var(--primary-light); padding: 2px 6px; border-radius: 6px; font-weight: 600; margin-top: 2px; }
+
+        .avg-badge { background: #eff6ff; color: #1e40af; font-weight: 800; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; border: 1px solid rgba(30, 64, 175, 0.2); display: inline-block; }
+        .ovr-badge { background: #ecfdf5; color: var(--success); font-weight: 800; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; border: 1px solid rgba(5, 150, 105, 0.2); display: inline-block; }
+
+        /* Modal Pop-up Input Nilai (Liquid Glass Effect) */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(15, 23, 42, 0.45); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px); 
+            z-index: 1000; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 15px; 
+        }
+        
+        .modal-content { 
+            background: rgba(255, 255, 255, 0.82); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            padding: 26px; 
+            border-radius: 22px; 
+            width: 100%; 
+            max-width: 550px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.6); 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            animation: modalPop 0.25s ease-out;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h3 { color: var(--primary); margin-bottom: 4px; font-size: 1.15rem; font-weight: 700; }
+        .modal-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; border-bottom: 1px solid rgba(220, 38, 38, 0.1); padding-bottom: 8px; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+        @media(max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-size: 0.76rem; font-weight: 700; color: var(--text-muted); }
+        .form-group input { padding: 8px 10px; border: 1.5px solid rgba(203, 213, 225, 0.8); border-radius: 9px; font-size: 0.85rem; outline: none; background: rgba(255, 255, 255, 0.9); transition: all 0.2s; }
+        .form-group input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); }
+
+        .btn { background-color: var(--primary); color: white; border: none; padding: 10px 18px; font-size: 0.88rem; font-weight: 600; border-radius: 10px; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .btn:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background: rgba(241, 245, 249, 0.8); color: var(--text-main); border: 1px solid rgba(203, 213, 225, 0.5); padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px; transition: all 0.2s; }
+        .btn-secondary:hover { background: rgba(226, 232, 240, 0.9); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-section">
+            <h1>📊 Kelola Nilai & OVR Pemain</h1>
+            <a href="admin.html" class="btn-back">⬅️ Kembali ke Panel Admin</a>
+        </div>
+
+        <div class="admin-card">
+            <h3>Daftar Seluruh Siswa</h3>
+            <p class="subtitle">Klik pada baris nama siswa mana saja untuk memunculkan pop-up penilaian. Nilai otomatis tersinkron dengan halaman siswa & ranking.</p>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="6%">No</th>
+                            <th width="38%">Nama Siswa</th>
+                            <th width="20%">Nilai Rata-rata</th>
+                            <th width="20%">OVR Rating</th>
+                            <th width="16%" style="text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Memuat data siswa...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pop-up Input Nilai (Liquid Glass Effect) -->
+    <div id="gradeModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalStudentName">Beri Nilai Siswa</h3>
+            <div class="modal-subtitle">ID Siswa: <span id="modalStudentId">-</span></div>
+
+            <div class="form-grid">
+                <div class="form-group"><label>Passing</label><input type="number" id="val-passing" min="0" max="100"></div>
+                <div class="form-group"><label>Control</label><input type="number" id="val-control" min="0" max="100"></div>
+                <div class="form-group"><label>Dribbling</label><input type="number" id="val-dribbling" min="0" max="100"></div>
+                <div class="form-group"><label>Shooting</label><input type="number" id="val-shooting" min="0" max="100"></div>
+                <div class="form-group"><label>Kecepatan</label><input type="number" id="val-kecepatan" min="0" max="100"></div>
+                <div class="form-group"><label>Stamina</label><input type="number" id="val-stamina" min="0" max="100"></div>
+                <div class="form-group"><label>Taktik</label><input type="number" id="val-taktik" min="0" max="100"></div>
+                <div class="form-group"><label>Kerja Sama</label><input type="number" id="val-kerjaSama" min="0" max="100"></div>
+                <div class="form-group"><label>Disiplin</label><input type="number" id="val-disiplin" min="0" max="100"></div>
+                <div class="form-group"><label>Mental Bertanding</label><input type="number" id="val-mental" min="0" max="100"></div>
+            </div>
+
+            <button class="btn" onclick="saveStudentGrades()">💾 Simpan Nilai</button>
+            <button class="btn-secondary" onclick="closeGradeModal()">Batal / Tutup</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getFirestore, collection, doc, getDocs, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBABI21WSzwx0uVln_SkLlHrLWuUgJyclQ",
+            authDomain: "absen-pemain.firebaseapp.com",
+            projectId: "absen-pemain",
+            storageBucket: "absen-pemain.firebasestorage.app",
+            messagingSenderId: "714361263502",
+            appId: "1:714361263502:web:ab6fc668eb4d2b09b680df",
+            measurementId: "G-RF6G474HSY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        if (localStorage.getItem('adminLoggedIn') !== 'true') { window.location.href = 'index.html'; }
+
+        let allStudents = [];
+        let allGrades = {};
+        let activeSelectedUserId = null;
+
+        async function initGradePage() {
+            const studentSnap = await getDocs(collection(db, "siswa"));
+            allStudents = [];
+            studentSnap.forEach(docSnap => {
+                allStudents.push(docSnap.data());
+            });
+
+            const gradeSnap = await getDocs(collection(db, "grades"));
+            allGrades = {};
+            gradeSnap.forEach(docSnap => {
+                allGrades[docSnap.id] = docSnap.data();
+            });
+
+            renderStudentTable();
+        }
+
+        const tableBody = document.getElementById('studentTableBody');
+
+        function renderStudentTable() {
+            tableBody.innerHTML = '';
+            if (allStudents.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Belum ada data siswa.</td></tr>`;
+                return;
+            }
+
+            allStudents.forEach((student, index) => {
+                let userId = student.userId || student.nis || student.username;
+                let name = student.name || student.nama || '-';
+                let photo = student.photo || '';
+                let d = allGrades[userId] || {};
+
+                let aspects = ['passing', 'control', 'dribbling', 'shooting', 'kecepatan', 'stamina', 'taktik', 'kerjaSama', 'disiplin', 'mental', 'akademik'];
+                let total = 0, count = 0, hasValue = false;
+                
+                aspects.forEach(k => {
+                    let val = parseFloat(d[k]);
+                    if (!isNaN(val)) { 
+                        total += val; 
+                        count++;
+                        if (val > 0) hasValue = true; 
+                    }
+                });
+
+                // Rata-rata dari aspek yang sudah terisi
+                let avg = count > 0 ? Math.round(total / count) : '-';
+                // OVR Rating menggunakan perhitungan 11 aspek persis seperti di siswa & ranking
+                let ovr = hasValue ? Math.round(total / 11) : '-';
+
+                let avatarHTML = photo ? `<img src="${photo}" class="student-avatar">` : `<div class="student-avatar">${name.charAt(0).toUpperCase()}</div>`;
+
+                let row = document.createElement('tr');
+                row.className = 'student-row';
+                row.onclick = () => openGradeModal(userId, name);
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><div class="student-profile">${avatarHTML}<div><div style="font-weight: 600;">${name}</div><span class="user-id-badge">${userId}</span></div></div></td>
+                    <td><span class="avg-badge">${avg !== '-' ? avg : '-'}</span></td>
+                    <td><span class="ovr-badge">${ovr !== '-' ? 'OVR ' + ovr : 'Belum Dinilai'}</span></td>
+                    <td style="text-align: center;"><button class="btn-back" style="padding: 4px 10px; font-size: 0.75rem;">✏️ Beri Nilai</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        window.openGradeModal = async function(userId, name) {
+            activeSelectedUserId = userId;
+            document.getElementById('modalStudentName').innerText = name;
+            document.getElementById('modalStudentId').innerText = userId;
+            document.getElementById('gradeModal').style.display = 'flex';
+
+            let aspects = ['passing', 'control', 'dribbling', 'shooting', 'kecepatan', 'stamina', 'taktik', 'kerjaSama', 'disiplin', 'mental'];
+            aspects.forEach(k => { document.getElementById(`val-${k}`).value = ''; });
+
+            let gradeRef = doc(db, "grades", String(userId));
+            let gradeSnap = await getDoc(gradeRef);
+            if (gradeSnap.exists()) {
+                let data = gradeSnap.data();
+                aspects.forEach(k => {
+                    if (data[k] !== undefined) {
+                        document.getElementById(`val-${k}`).value = data[k];
+                    }
+                });
+            }
+        };
+
+        window.closeGradeModal = function() {
+            document.getElementById('gradeModal').style.display = 'none';
+            activeSelectedUserId = null;
+        };
+
+        window.saveStudentGrades = async function() {
+            if (!activeSelectedUserId) return;
+
+            let aspects = ['passing', 'control', 'dribbling', 'shooting', 'kecepatan', 'stamina', 'taktik', 'kerjaSama', 'disiplin', 'mental'];
+            let gradeRef = doc(db, "grades", String(activeSelectedUserId));
+            let gradeSnap = await getDoc(gradeRef);
+            let existingData = gradeSnap.exists() ? gradeSnap.data() : { akademik: 0 };
+
+            aspects.forEach(k => {
+                let val = parseFloat(document.getElementById(`val-${k}`).value);
+                existingData[k] = isNaN(val) ? 0 : val;
+            });
+
+            // Sinkronisasi penuh: Hitung rata-rata dan pastikan kunci 'average' tersimpan agar otomatis terbaca di halaman siswa dan papan ranking
+            let sum = 0;
+            let fullAspects = [...aspects, 'akademik'];
+            fullAspects.forEach(k => { sum += parseFloat(existingData[k]) || 0; });
+            existingData.average = Math.round(sum / 11);
+
+            await setDoc(gradeRef, existingData, { merge: true });
+            alert('Nilai berhasil disimpan dan disinkronkan ke siswa & ranking!');
+            closeGradeModal();
+            initGradePage();
+        };
+
+        initGradePage();
+    </script>
+</body>
+</html>
