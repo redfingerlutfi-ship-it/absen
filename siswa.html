@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Base Club - Portal Siswa & Akademi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #121212;
+            --bg-card: #1E1E1E;
+            --color-red: #D91414;
+            --color-red-hover: #b51010;
+            --color-white: #FFFFFF;
+            --color-gray: #8A99AD;
+            --color-border: #2C2C2C;
+            --sidebar-width: 260px;
+            --success: #059669;
+            --warning: #d97706;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--color-white);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-brand {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .brand-logo-area { display: flex; align-items: center; gap: 12px; }
+        .sidebar-brand i { font-size: 24px; color: var(--color-red); }
+        .sidebar-brand h2 { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
+
+        .close-sidebar {
+            display: none; background: none; border: none; color: var(--color-white); font-size: 20px; cursor: pointer;
+        }
+
+        .sidebar-menu { list-style: none; padding: 20px 12px; overflow-y: auto; flex-grow: 1; }
+        .sidebar-menu li { margin-bottom: 6px; }
+        
+        .sidebar-menu a {
+            display: flex; align-items: center; gap: 14px; padding: 12px 16px; color: var(--color-gray);
+            text-decoration: none; font-weight: 500; font-size: 14px; border-radius: 8px; transition: all 0.2s ease; cursor: pointer;
+        }
+
+        .sidebar-menu li.active a { background-color: var(--color-red); color: var(--color-white); }
+        .sidebar-menu a:hover { background-color: rgba(217, 20, 20, 0.15); color: var(--color-white); }
+        .sidebar-menu a i { font-size: 16px; width: 20px; text-align: center; }
+
+        .overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 998; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .overlay.show { display: block; opacity: 1; }
+
+        main {
+            margin-left: var(--sidebar-width); flex-grow: 1; padding: 30px; overflow-y: auto; width: calc(100% - var(--sidebar-width));
+        }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 15px; flex-wrap: wrap; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        .menu-toggle {
+            display: none; background: var(--bg-card); border: 1px solid var(--color-border); color: var(--color-white);
+            padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 18px;
+        }
+
+        .header-title h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .header-title p { color: var(--color-gray); font-size: 13px; }
+
+        .realtime-clock-badge {
+            background: rgba(5, 150, 105, 0.15); border: 1px solid rgba(5, 150, 105, 0.4);
+            padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #34d399;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .user-profile {
+            display: flex; align-items: center; gap: 10px; background: var(--bg-card); padding: 6px 12px;
+            border-radius: 30px; border: 1px solid var(--color-border); white-space: nowrap; cursor: pointer;
+        }
+        .user-profile img, .user-avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-red); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: #2a2a2a; color: #fff; }
+        .user-info h4 { font-size: 13px; font-weight: 600; }
+        .user-info span { font-size: 10px; color: var(--color-gray); }
+
+        .role-badge {
+            background: rgba(96, 165, 250, 0.15); 
+            color: #60a5fa; 
+            border: 1px solid rgba(96, 165, 250, 0.3); 
+            padding: 2px 8px; 
+            border-radius: 12px; 
+            font-size: 10px; 
+            font-weight: 600; 
+            display: inline-block; 
+            margin-top: 2px;
+        }
+
+        .card-box {
+            background-color: var(--bg-card); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; margin-bottom: 20px;
+        }
+        .card-box h2 {
+            font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--color-red); color: var(--color-white); border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: background 0.2s;
+        }
+        .btn-primary:hover { background-color: var(--color-red-hover); }
+        .btn-primary:disabled { background-color: #333; color: #777; cursor: not-allowed; }
+
+        .content-section { display: none; }
+        .content-section.active-section { display: block; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card {
+            background-color: var(--bg-card); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;
+        }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background-color: var(--color-red); }
+        .stat-card h3 { font-size: 12px; color: var(--color-gray); font-weight: 500; margin-bottom: 8px; }
+        .stat-card .value { font-size: 20px; font-weight: 800; }
+
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 650px; }
+        th { color: var(--color-gray); font-weight: 500; padding: 10px 12px; border-bottom: 1px solid var(--color-border); background: rgba(255,255,255,0.02); }
+        td { padding: 12px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+
+        .badge { background-color: rgba(217, 20, 20, 0.2); color: #ff4d4d; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge.success { background-color: rgba(5, 150, 105, 0.2); color: #34d399; }
+        .badge.warning { background-color: rgba(217, 119, 6, 0.2); color: #fbbf24; }
+
+        .peer-avatar {
+            width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-red);
+            background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff;
+        }
+
+        .aspect-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .aspect-card { background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); padding: 15px; border-radius: 10px; text-align: center; }
+        .aspect-title { font-size: 12px; color: var(--color-gray); margin-bottom: 5px; text-transform: uppercase; }
+        .aspect-score { font-size: 20px; font-weight: 800; color: #fff; }
+
+        .form-control {
+            width: 100%; padding: 10px 14px; background: #121212; border: 1px solid var(--color-border);
+            color: #fff; border-radius: 8px; font-size: 13px; outline: none; margin-bottom: 12px;
+        }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 2000; justify-content: center; align-items: center; padding: 15px;
+        }
+        .modal-content {
+            background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+            padding: 24px; border-radius: 16px; width: 100%; max-width: 460px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            max-height: 90vh; overflow-y: auto; text-align: left;
+        }
+
+        canvas.signature-pad {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            width: 100%;
+            height: 130px;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        @media (max-width: 768px) {
+            aside { width: 75%; transform: translateX(-100%); z-index: 999; box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5); }
+            aside.show-half { transform: translateX(0); }
+            .close-sidebar { display: block; }
+            main { margin-left: 0; width: 100%; padding: 15px; }
+            .menu-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay"></div>
+
+    <aside id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo-area">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h2>HOME BASE</h2>
+            </div>
+            <button class="close-sidebar" id="closeSidebar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <ul class="sidebar-menu" id="sidebarMenu">
+            <li class="active"><a onclick="switchPage('home', this)"><i class="fa-solid fa-house"></i> Beranda</a></li>
+            <li><a onclick="switchPage('absen', this)"><i class="fa-solid fa-clipboard-user"></i> Absensi</a></li>
+            <li><a onclick="switchPage('rating', this)"><i class="fa-solid fa-star-half-stroke"></i> Rapor & OVR</a></li>
+            <li><a onclick="switchPage('teamphoto', this)"><i class="fa-solid fa-users-viewfinder"></i> Foto Tim & TTD</a></li>
+            <li><a onclick="switchPage('exam', this)"><i class="fa-solid fa-graduation-cap"></i> Ujian Akademik</a></li>
+            <li><a onclick="switchPage('ranking', this)"><i class="fa-solid fa-ranking-star"></i> Peringkat</a></li>
+            <li><a onclick="studentLogout()"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <header>
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-title">
+                    <h1 id="pageTitle">Beranda</h1>
+                    <p id="pageDesc">Portal Akademik Siswa</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div class="realtime-clock-badge">
+                    <i class="fa-regular fa-calendar-days"></i> <span id="studentRealtimeDate">Memuat tanggal...</span>
+                </div>
+                <div class="user-profile" onclick="openProfileModal()" title="Ubah Profil">
+                    <div id="headerUserAvatarContainer">
+                        <div id="headerUserInitial" class="user-avatar-placeholder">S</div>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="headerUserName">Memuat...</h4>
+                        <div id="headerUserRole" class="role-badge">Anggota</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Beranda Section -->
+        <div id="sec-home" class="content-section active-section">
+            <div class="card-box" style="background: linear-gradient(135deg, rgba(217, 20, 20, 0.15), rgba(30, 30, 30, 0.9)); border-color: rgba(217, 20, 20, 0.4);">
+                <h2 style="color: #ff4d4d; margin-bottom: 8px;"><i class="fa-solid fa-bullhorn"></i> Pengumuman Pelatih</h2>
+                <p id="coachAnnouncementText" style="color: #fff; font-size: 14px; line-height: 1.6; font-weight: 500;">Memuat pengumuman...</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Player Aktif</h3>
+                    <div class="value" id="homeActivePlayersCount" style="color: #60a5fa;">0 Siswa</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Status Kehadiran Hari Ini</h3>
+                    <div class="value" id="homeAttendanceStatus" style="font-size: 15px; color: #fbbf24;">Belum Absen</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Skor OVR</h3>
+                    <div class="value" id="homeOvrScore" style="color: #34d399;">OVR -</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Jadwal Latihan</h3>
+                    <div class="value" id="homeSessionNameDisplay" style="font-size: 14px; color: #60a5fa;">Memuat...</div>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <h2><span><i class="fa-regular fa-clock"></i> Jadwal & Sesi Latihan Hari Ini</span></h2>
+                <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                    <div style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-radius: 10px; border: 1px solid var(--color-border); flex: 1; min-width: 200px;">
+                        <span style="font-size: 11px; color: var(--color-gray); display: block; margin-bottom: 4px;">Waktu Latihan</span>
+                        <b id="scheduleTimeDisplay" style="font-size: 16px; color: #34d399;">Memuat...</b>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 14px 20px; border-radius: 10px; border: 1px solid var(--color-border); flex: 1; min-width: 200px;">
+                        <span style="font-size: 11px; color: var(--color-gray); display: block; margin-bottom: 4px;">Materi / Agenda</span>
+                        <b id="scheduleTitleDisplay" style="font-size: 16px; color: #fff;">Lapangan Utama Home Base Club</b>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <h2><span><i class="fa-solid fa-calendar-days"></i> Kalender Jadwal Klub Real-Time</span></h2>
+                <div id="homeRosterContainer">
+                    <p style="color:var(--color-gray);">Memuat kalender roster...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Absensi Section -->
+        <div id="sec-absen" class="content-section">
+            <div class="card-box" style="text-align: center; padding: 25px;">
+                <h2 id="absenSectionMainTitle" style="justify-content: center; margin-bottom: 8px;">Presensi Kehadiran Real-Time</h2>
+                <p id="absenSessionInfoText" style="color: var(--color-gray); font-size: 13px; margin-bottom: 20px;">Memeriksa status sesi hari ini...</p>
+                
+                <div id="absenActionArea" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 15px;">
+                    <button id="btnDoAbsen" class="btn-primary" onclick="submitAttendance('Hadir', '')" disabled>Hadir</button>
+                    <button id="btnDoIzin" class="btn-primary" onclick="openReasonModal('Izin')" style="background:#d97706;" disabled>Izin</button>
+                    <button id="btnDoSakit" class="btn-primary" onclick="openReasonModal('Sakit')" style="background:#2563eb;" disabled>Sakit</button>
+                </div>
+                <div id="absenResultBadge" style="margin-top: 15px; font-weight: 700; font-size: 14px;"></div>
+            </div>
+
+            <div class="card-box">
+                <h2><span>Rekap Kehadiran Siswa Hari Ini</span> <span id="recapSessionLabel" style="font-size:12px; color:var(--color-gray);"></span></h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="6%">No</th>
+                                <th width="10%">Foto</th>
+                                <th width="22%">Nama</th>
+                                <th width="16%">Jabatan / Posisi</th>
+                                <th width="14%">Status</th>
+                                <th width="12%">Waktu</th>
+                                <th width="20%">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="peersAttendanceTableBody">
+                            <tr><td colspan="7" style="text-align:center; color:var(--color-gray);">Memuat rekap...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rapor & OVR Section -->
+        <div id="sec-rating" class="content-section">
+            <div class="card-box" style="text-align:center; padding: 25px; margin-bottom: 20px; background: linear-gradient(135deg, rgba(217,20,20,0.1), rgba(30,30,30,0.8));">
+                <h3 style="font-size: 14px; color: var(--color-gray); text-transform: uppercase; letter-spacing: 1px;">Skor Keseluruhan</h3>
+                <div style="font-size: 42px; font-weight: 900; color: #34d399; margin: 10px 0;" id="myOvrLarge">OVR -</div>
+                <p style="font-size: 13px; color: var(--color-gray);">Keterangan: <span id="myDescLarge" style="color: #60a5fa; font-weight: 700;">-</span></p>
+            </div>
+
+            <div class="card-box">
+                <h2>11 Aspek Penilaian (Termasuk Akademik)</h2>
+                <div class="aspect-grid" id="aspectsContainer"></div>
+            </div>
+        </div>
+
+        <!-- Foto Tim & TTD Section -->
+        <div id="sec-teamphoto" class="content-section">
+            <div class="card-box">
+                <h2><i class="fa-solid fa-users-viewfinder"></i> Galeri Foto Tim, Download & Tanda Tangan Digital</h2>
+                <p style="color: var(--color-gray); font-size: 13px; margin-bottom: 20px;">
+                    Unduh foto tim yang diunggah pelatih, bubuhkan tanda tangan digital Anda di bawah foto, dan diskusikan bersama tim.
+                </p>
+                <div id="teamPhotoListContainer">
+                    <p style="color:var(--color-gray); text-align:center; padding:20px;">Memuat galeri foto tim...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ujian Akademik Section -->
+        <div id="sec-exam" class="content-section">
+            <div class="card-box" id="examContainerBox">
+                <h2>Ujian Akademik Taktis</h2>
+                <p id="examTimerDisplay" style="color: var(--color-gray); font-size: 13px; margin-bottom: 15px;">Memuat status...</p>
+                <div id="examContentArea">
+                    <p style="color: var(--color-gray);">Memuat soal...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Peringkat Section -->
+        <div id="sec-ranking" class="content-section">
+            <div class="card-box">
+                <h2>Peringkat OVR Siswa</h2>
+                <p style="color: var(--color-gray); font-size: 12px; margin-bottom: 15px;">Akumulasi nilai seluruh aspek termasuk akademik.</p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="12%">Peringkat</th>
+                                <th>Nama</th>
+                                <th width="25%">Jabatan / Posisi</th>
+                                <th width="25%">OVR Rata-rata</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rankingTableBody">
+                            <tr><td colspan="4" style="text-align:center; color:var(--color-gray);">Memuat peringkat...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Alasan -->
+    <div id="reasonModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalReasonTitle" style="font-size: 16px; margin-bottom: 12px;">Form Keterangan</h3>
+            <textarea id="reasonInputText" class="form-control" placeholder="Tuliskan keterangan..." style="height: 90px;"></textarea>
+            <button class="btn-primary" onclick="submitReasonAttendance()" style="width:100%; margin-bottom:8px;">Kirim</button>
+            <button class="btn-primary" onclick="closeReasonModal()" style="width:100%; background:#333;">Batal</button>
+        </div>
+    </div>
+
+    <!-- Modal Profil -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="font-size: 16px; margin-bottom: 12px;">Pengaturan Profil Siswa</h3>
+            <div style="margin-bottom:10px;">
+                <label style="font-size:11px; color:var(--color-gray);">Nama Lengkap:</label>
+                <input type="text" id="editProfileName" class="form-control">
+            </div>
+            <div style="margin-bottom:10px;">
+                <label style="font-size:11px; color:var(--color-gray);">Jabatan / Posisi:</label>
+                <input type="text" id="editProfilePosition" class="form-control" placeholder="misal: Kapten / Penyerang / Anggota">
+            </div>
+            <div style="margin-bottom:10px;">
+                <label style="font-size:11px; color:var(--color-gray);">No. WhatsApp:</label>
+                <input type="text" id="editProfilePhone" class="form-control">
+            </div>
+            <div style="margin-bottom:10px;">
+                <label style="font-size:11px; color:var(--color-gray);">Kata Sandi Baru:</label>
+                <input type="password" id="editProfilePass" class="form-control" placeholder="Biarkan kosong jika tidak diubah">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:11px; color:var(--color-gray);">Ganti Foto Profil Baru:</label>
+                <input type="file" id="editProfilePhotoFile" accept="image/*" class="form-control">
+                <button type="button" class="btn-primary" onclick="deleteStudentProfilePhotoOnly()" style="background:#ef4444; padding:6px 12px; font-size:11px; margin-top:4px;"><i class="fa-solid fa-trash"></i> Hapus Foto Profil Saja</button>
+            </div>
+            <button class="btn-primary" onclick="saveStudentProfile()" style="width:100%; margin-bottom:8px;">Simpan Perubahan</button>
+            <button class="btn-primary" onclick="closeProfileModal()" style="width:100%; background:#333;">Batal</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, getDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBABI21WSzwx0uVln_SkLlHrLWuUgJyclQ",
+            authDomain: "absen-pemain.firebaseapp.com",
+            projectId: "absen-pemain",
+            storageBucket: "absen-pemain.firebasestorage.app",
+            messagingSenderId: "714361263502",
+            appId: "1:714361263502:web:ab6fc668eb4d2b09b680df",
+            measurementId: "G-RF6G474HSY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentStudentId = localStorage.getItem('studentLoggedInId') || localStorage.getItem('studentId') || localStorage.getItem('userId') || localStorage.getItem('nis');
+        if (!currentStudentId) {
+            try {
+                let savedUser = JSON.parse(localStorage.getItem('studentData') || localStorage.getItem('currentUser') || '{}');
+                currentStudentId = savedUser.userId || savedUser.nis || savedUser.id;
+            } catch(e) {}
+        }
+
+        if (!currentStudentId) {
+            alert('Sesi siswa tidak valid. Silakan masuk kembali.');
+            window.location.href = 'index.html';
+        }
+
+        window.studentLogout = function() {
+            localStorage.removeItem('studentLoggedInId');
+            localStorage.removeItem('studentId');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('studentData');
+            window.location.href = 'index.html';
+        };
+
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const overlay = document.getElementById('overlay');
+
+        function openMenu() { sidebar.classList.add('show-half'); overlay.classList.add('show'); }
+        function closeMenu() { sidebar.classList.remove('show-half'); overlay.classList.remove('show'); }
+
+        menuToggle.addEventListener('click', openMenu);
+        closeSidebar.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', closeMenu);
+
+        const pageMeta = {
+            home: { title: "Beranda", desc: "Portal Akademik Siswa" },
+            absen: { title: "Absensi", desc: "Manajemen Kehadiran Latihan" },
+            rating: { title: "Rapor & OVR", desc: "Evaluasi Aspek Kemampuan" },
+            teamphoto: { title: "Foto Tim & TTD", desc: "Dokumentasi Foto Skuad & Tanda Tangan" },
+            exam: { title: "Ujian Akademik", desc: "Ujian Teori Taktis" },
+            ranking: { title: "Peringkat", desc: "Klasemen Performa Siswa" }
+        };
+
+        window.switchPage = function(pageId, element) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active-section'));
+            document.getElementById('sec-' + pageId).classList.add('active-section');
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            if(element) element.parentElement.classList.add('active');
+            document.getElementById('pageTitle').innerText = pageMeta[pageId].title;
+            document.getElementById('pageDesc').innerText = pageMeta[pageId].desc;
+            if (window.innerWidth <= 768) closeMenu();
+        };
+
+        let studentData = null;
+
+        function getLocalDateString() {
+            let d = new Date();
+            let year = d.getFullYear();
+            let month = String(d.getMonth() + 1).padStart(2, '0');
+            let day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        let lastCheckedDateStr = getLocalDateString();
+        let pendingReasonType = '';
+        let activeCanvasContexts = {};
+
+        function updateStudentRealtimeClock() {
+            let now = new Date();
+            let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            let formattedDate = now.toLocaleDateString('id-ID', options);
+            let timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('studentRealtimeDate').innerText = `${formattedDate} | ${timeStr}`;
+
+            let freshDateStr = getLocalDateString();
+            if (freshDateStr !== lastCheckedDateStr) {
+                lastCheckedDateStr = freshDateStr;
+                checkAttendanceStatusLive();
+            }
+        }
+        setInterval(updateStudentRealtimeClock, 1000);
+        updateStudentRealtimeClock();
+
+        function initSignaturePadForPhoto(photoId) {
+            let canvas = document.getElementById(`sig_canvas_${photoId}`);
+            if (!canvas) return;
+            let ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 130;
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+
+            let isDrawing = false;
+            let getPos = (e) => {
+                let rect = canvas.getBoundingClientRect();
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            };
+
+            canvas.onmousedown = (e) => { isDrawing = true; let p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+            canvas.onmousemove = (e) => { if (!isDrawing) return; let p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+            canvas.onmouseup = () => { isDrawing = false; };
+            canvas.onmouseleave = () => { isDrawing = false; };
+
+            canvas.ontouchstart = (e) => { e.preventDefault(); isDrawing = true; let p = getPos(e.touches[0]); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+            canvas.ontouchmove = (e) => { e.preventDefault(); if (!isDrawing) return; let p = getPos(e.touches[0]); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+            canvas.ontouchend = (e) => { e.preventDefault(); isDrawing = false; };
+
+            activeCanvasContexts[photoId] = { canvas, ctx };
+        }
+
+        window.clearSpecificSignature = function(photoId) {
+            let item = activeCanvasContexts[photoId];
+            if (item && item.ctx) {
+                item.ctx.clearRect(0, 0, item.canvas.width, item.canvas.height);
+            }
+        };
+
+        window.submitStudentSignature = async function(photoId) {
+            let item = activeCanvasContexts[photoId];
+            if (!item) return;
+            let signatureDataUrl = item.canvas.toDataURL('image/png');
+
+            let photoRef = doc(db, "teamPhotos", photoId);
+            let photoSnap = await getDoc(photoRef);
+            if (!photoSnap.exists()) return;
+
+            let data = photoSnap.data();
+            if (!data.signatures) data.signatures = {};
+
+            data.signatures[String(currentStudentId)] = {
+                name: studentData.name || studentData.nama,
+                signatureData: signatureDataUrl
+            };
+
+            await updateDoc(photoRef, { signatures: data.signatures });
+            alert('Tanda tangan Anda berhasil disimpan secara permanen pada foto tim ini.');
+        };
+
+        function getQualitativeDescription(score) {
+            let s = parseFloat(score) || 0;
+            if (s >= 85) return "Sangat Baik";
+            if (s >= 70) return "Baik";
+            if (s >= 55) return "Kurang";
+            return "Sangat Kurang";
+        }
+
+        async function initStudentPortalRealtime() {
+            try {
+                let studentSnap = await getDoc(doc(db, "siswa", String(currentStudentId)));
+                if (!studentSnap.exists()) {
+                    alert('Data siswa tidak ditemukan.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                studentData = studentSnap.data();
+                renderProfileHeader();
+
+                // SETUP REALTIME LISTENERS (LIVE UPDATE TANPA REFRESH)
+                
+                // 1. Live Player Count & Peringkat & Rekap Absen & Tabel Siswa
+                onSnapshot(collection(db, "siswa"), (snapshot) => {
+                    document.getElementById('homeActivePlayersCount').innerText = `${snapshot.size} Siswa`;
+                    loadRankingData(snapshot);
+                    checkAttendanceStatusLive();
+                });
+
+                // 2. Live Pengumuman Pelatih
+                onSnapshot(doc(db, "settings", "coachAnnouncement"), (docSnap) => {
+                    let annText = "Selamat datang di Home Base Club. Tetap fokus dan berikan performa terbaik dalam sesi latihan.";
+                    if (docSnap.exists() && docSnap.data().message) annText = docSnap.data().message;
+                    document.getElementById('coachAnnouncementText').innerText = annText;
+                });
+
+                // 3. Live Sesi Absensi & Rekap Kehadiran
+                let activeDateStr = getLocalDateString();
+                onSnapshot(doc(db, "attendanceSessions", activeDateStr), () => {
+                    checkAttendanceStatusLive();
+                });
+                onSnapshot(collection(db, "attendance", activeDateStr, "records"), () => {
+                    checkAttendanceStatusLive();
+                });
+
+                // 4. Live Rapor & Nilai OVR Siswa
+                onSnapshot(doc(db, "grades", String(currentStudentId)), (docSnap) => {
+                    renderStudentGrades(docSnap.exists() ? docSnap.data() : {});
+                    loadRankingData();
+                });
+
+                // 5. Live Modul Ujian / Setting Ujian (Tutup/Buka otomatis secara real-time)
+                onSnapshot(doc(db, "settings", "examSession"), () => {
+                    loadExamModule();
+                });
+                onSnapshot(collection(db, "examQuestions"), () => {
+                    loadExamModule();
+                });
+
+                // 6. Live Galeri Foto Tim & Komentar / TTD
+                onSnapshot(collection(db, "teamPhotos"), (snapshot) => {
+                    renderTeamPhotos(snapshot);
+                });
+
+                // 7. Live Kalender Roster
+                onSnapshot(collection(db, "rosters"), (snapshot) => {
+                    renderRosters(snapshot);
+                });
+
+            } catch (error) {
+                console.error("Gagal memuat portal realtime:", error);
+            }
+        }
+
+        function renderProfileHeader() {
+            let name = studentData.name || studentData.nama || 'Siswa';
+            let position = studentData.position || studentData.jabatan || 'Anggota';
+            
+            document.getElementById('headerUserName').innerText = name;
+            document.getElementById('headerUserRole').innerText = position;
+
+            if (studentData.photo) {
+                document.getElementById('headerUserAvatarContainer').innerHTML = `<img src="${studentData.photo}" alt="Avatar">`;
+            } else {
+                document.getElementById('headerUserInitial').innerText = name.charAt(0).toUpperCase();
+            }
+        }
+
+        window.openProfileModal = function() {
+            document.getElementById('editProfileName').value = studentData.name || studentData.nama || '';
+            document.getElementById('editProfilePosition').value = studentData.position || studentData.jabatan || 'Anggota';
+            document.getElementById('editProfilePhone').value = studentData.phone || '';
+            document.getElementById('editProfilePass').value = studentData.password || '';
+            document.getElementById('editProfilePhotoFile').value = '';
+            document.getElementById('profileModal').style.display = 'flex';
+        };
+
+        window.closeProfileModal = function() {
+            document.getElementById('profileModal').style.display = 'none';
+        };
+
+        window.saveStudentProfile = async function() {
+            let name = document.getElementById('editProfileName').value.trim();
+            let position = document.getElementById('editProfilePosition').value.trim();
+            let phone = document.getElementById('editProfilePhone').value.trim();
+            let password = document.getElementById('editProfilePass').value.trim();
+            let photoInput = document.getElementById('editProfilePhotoFile');
+
+            if (!name) { alert('Nama wajib diisi.'); return; }
+            studentData.name = name;
+            studentData.nama = name;
+            studentData.position = position || 'Anggota';
+            studentData.jabatan = position || 'Anggota';
+            if (phone) studentData.phone = phone;
+            if (password) studentData.password = password;
+
+            async function commitProfile(photoUrl) {
+                if (photoUrl !== undefined) studentData.photo = photoUrl;
+                await setDoc(doc(db, "siswa", String(currentStudentId)), studentData, { merge: true });
+                alert('Profil berhasil diperbarui.');
+                document.getElementById('editProfilePhotoFile').value = '';
+                closeProfileModal();
+                renderProfileHeader();
+            }
+
+            if (photoInput.files && photoInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let img = new Image();
+                    img.src = e.target.result;
+                    img.onload = async function() {
+                        let canvas = document.createElement('canvas');
+                        let ctx = canvas.getContext('2d');
+                        let MAX_WIDTH = 300, MAX_HEIGHT = 300;
+                        let width = img.width, height = img.height;
+                        if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+                        else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                        canvas.width = width; canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        await commitProfile(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                await commitProfile();
+            }
+        };
+
+        window.deleteStudentProfilePhotoOnly = async function() {
+            if (confirm("Hapus foto profil Anda?")) {
+                studentData.photo = "";
+                await setDoc(doc(db, "siswa", String(currentStudentId)), { photo: "" }, { merge: true });
+                document.getElementById('editProfilePhotoFile').value = '';
+                alert("Foto profil berhasil dihapus.");
+                renderProfileHeader();
+                closeProfileModal();
+            }
+        };
+
+        function renderTeamPhotos(snapshot) {
+            let container = document.getElementById('teamPhotoListContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            let list = [];
+            snapshot.forEach(docSnap => { list.push({ id: docSnap.id, ...docSnap.data() }); });
+
+            if (list.length === 0) {
+                container.innerHTML = `<p style="color:var(--color-gray); text-align:center; padding:20px;">Belum ada foto tim yang diunggah oleh pelatih.</p>`;
+                return;
+            }
+
+            list.forEach(p => {
+                let signaturesHtml = '';
+                let hasSigned = false;
+                if (p.signatures && Object.keys(p.signatures).length > 0) {
+                    for (let sId in p.signatures) {
+                        let sig = p.signatures[sId];
+                        if (sId === String(currentStudentId)) hasSigned = true;
+                        signaturesHtml += `
+                            <div style="background:#fff; padding:6px 10px; border-radius:6px; display:inline-block; margin:4px; text-align:center;">
+                                <span style="font-size:10px; color:#333; display:block; font-weight:600;">${sig.name}</span>
+                                <img src="${sig.signatureData}" alt="TTD" style="height:35px; display:block; margin:0 auto;">
+                            </div>
+                        `;
+                    }
+                } else {
+                    signaturesHtml = `<p style="color:var(--color-gray); font-size:12px; font-style:italic;">Belum ada tanda tangan siswa.</p>`;
+                }
+
+                let commentsHtml = '';
+                if (p.comments && p.comments.length > 0) {
+                    p.comments.forEach(c => {
+                        commentsHtml += `<div style="background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px;"><b style="color:#60a5fa;">${c.name}:</b> ${c.text}</div>`;
+                    });
+                } else {
+                    commentsHtml = `<p style="color:var(--color-gray); font-size:12px; font-style:italic;">Belum ada komentar.</p>`;
+                }
+
+                let signatureInputArea = '';
+                if (hasSigned) {
+                    signatureInputArea = `<div style="background:rgba(5,150,105,0.1); border:1px solid rgba(5,150,105,0.3); padding:10px; border-radius:8px; text-align:center; color:#34d399; font-size:13px; font-weight:600;"><i class="fa-solid fa-circle-check"></i> Anda sudah menandatangani foto tim ini.</div>`;
+                } else {
+                    signatureInputArea = `
+                        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--color-border); padding:12px; border-radius:8px; margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label style="font-size:12px; color:var(--color-gray);">Tanda Tangan Digital Anda:</label>
+                                <button type="button" class="btn-primary" onclick="clearSpecificSignature('${p.id}')" style="padding:2px 8px; font-size:10px; background:#333;">Ulangi TTD</button>
+                            </div>
+                            <canvas id="sig_canvas_${p.id}" class="signature-pad"></canvas>
+                            <button class="btn-primary" onclick="submitStudentSignature('${p.id}')" style="width:100%; margin-top:8px; padding:8px; font-size:12px;">Kirim Tanda Tangan</button>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML += `
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--color-border); padding:16px; border-radius:10px; margin-bottom:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+                            <h3 style="font-size:15px; font-weight:700; color:#fff;">${p.title}</h3>
+                            <a href="${p.photoData}" download="Foto_Tim_${p.title}.jpg" class="btn-primary" style="padding:6px 12px; font-size:12px; text-decoration:none; background:#059669;"><i class="fa-solid fa-download"></i> Download Foto Tim</a>
+                        </div>
+                        <div style="margin-bottom:12px; text-align:center; background:#000; border-radius:8px; overflow:hidden; padding:5px;">
+                            <img src="${p.photoData}" alt="Foto Tim" style="max-height:260px; max-width:100%; object-fit:contain; border-radius:6px;">
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <h4 style="font-size:13px; color:var(--color-gray); margin-bottom:6px;">Daftar Tanda Tangan Skuad:</h4>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-bottom:12px;">${signaturesHtml}</div>
+                            ${signatureInputArea}
+                        </div>
+                        <div style="border-top:1px solid var(--color-border); padding-top:12px;">
+                            <h4 style="font-size:13px; color:var(--color-gray); margin-bottom:8px;">Komentar & Diskusi:</h4>
+                            <div style="max-height:150px; overflow-y:auto; margin-bottom:10px;">${commentsHtml}</div>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="team_comment_input_${p.id}" class="form-control" placeholder="Tulis komentar..." style="margin-bottom:0;">
+                                <button class="btn-primary" onclick="submitTeamPhotoComment('${p.id}')" style="padding:8px 16px;">Kirim</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => { initSignaturePadForPhoto(p.id); }, 100);
+            });
+        }
+
+        window.submitTeamPhotoComment = async function(photoId) {
+            let inputElem = document.getElementById(`team_comment_input_${photoId}`);
+            let text = inputElem.value.trim();
+            if (!text) { alert('Komentar tidak boleh kosong.'); return; }
+            let posStr = studentData.position || studentData.jabatan || 'Anggota';
+            let commentObj = {
+                name: (studentData.name || studentData.nama) + ' (' + posStr + ')',
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            let photoRef = doc(db, "teamPhotos", photoId);
+            await updateDoc(photoRef, { comments: arrayUnion(commentObj) });
+            inputElem.value = '';
+        };
+
+        async function checkAttendanceStatusLive() {
+            let activeDateStr = getLocalDateString();
+            let btnAbsen = document.getElementById('btnDoAbsen');
+            let btnIzin = document.getElementById('btnDoIzin');
+            let btnDoSakit = document.getElementById('btnDoSakit');
+            let homeAttStatus = document.getElementById('homeAttendanceStatus');
+            let resultBadge = document.getElementById('absenResultBadge');
+            let sessionInfoText = document.getElementById('absenSessionInfoText');
+
+            let recSnap = await getDoc(doc(db, "attendance", activeDateStr, "records", String(currentStudentId)));
+            if (recSnap.exists()) {
+                let rec = recSnap.data();
+                let status = rec.status;
+                if(homeAttStatus) { homeAttStatus.innerText = status; homeAttStatus.style.color = status === 'Hadir' || status === 'Disetujui' ? '#34d399' : '#fbbf24'; }
+                if(resultBadge) resultBadge.innerHTML = `<span class="badge ${status === 'Hadir' || status === 'Disetujui' ? 'success' : 'warning'}" style="font-size:13px; padding:6px 14px;">Status Hari Ini: ${status}</span>`;
+                
+                if(btnAbsen) btnAbsen.disabled = true; 
+                if(btnIzin) btnIzin.disabled = true; 
+                if(btnDoSakit) btnDoSakit.disabled = true;
+                if(sessionInfoText) sessionInfoText.innerText = status === 'Alpa' ? 'Sesi tanggal ini telah ditutup dan Anda tercatat Alpa.' : 'Anda sudah melakukan presensi untuk hari ini.';
+                await loadPeersAttendanceRecordsLive(activeDateStr);
+                return;
+            }
+
+            let sessionSnap = await getDoc(doc(db, "attendanceSessions", activeDateStr));
+            let isSessionOpen = true;
+            let startTime = '08:00', endTime = '12:00';
+
+            if (sessionSnap.exists()) {
+                let data = sessionSnap.data();
+                isSessionOpen = data.isOpen !== false;
+                startTime = data.startTime || '08:00';
+                endTime = data.endTime || '12:00';
+            }
+
+            let scheduleTimeDisplay = document.getElementById('scheduleTimeDisplay');
+            if(scheduleTimeDisplay) scheduleTimeDisplay.innerText = `${startTime} - ${endTime} WIB`;
+
+            if (!isSessionOpen) {
+                if(sessionInfoText) sessionInfoText.innerText = 'Sesi absensi hari ini telah ditutup oleh pelatih.';
+                if(homeAttStatus) { homeAttStatus.innerText = 'Ditutup'; homeAttStatus.style.color = '#ef4444'; }
+                if(btnAbsen) btnAbsen.disabled = true; 
+                if(btnIzin) btnIzin.disabled = true; 
+                if(btnDoSakit) btnDoSakit.disabled = true;
+                await loadPeersAttendanceRecordsLive(activeDateStr);
+                return;
+            }
+
+            let now = new Date();
+            let currTimeMin = now.getHours() * 60 + now.getMinutes();
+            let [sH, sM] = startTime.split(':').map(Number);
+            let [eH, eM] = endTime.split(':').map(Number);
+            let startMin = sH * 60 + sM;
+            let endMin = eH * 60 + eM;
+
+            if (currTimeMin < startMin) {
+                if(sessionInfoText) sessionInfoText.innerText = `Absensi terkunci. Sesi baru dibuka pukul ${startTime} WIB.`;
+                if(homeAttStatus) { homeAttStatus.innerText = 'Belum Mulai'; homeAttStatus.style.color = '#fbbf24'; }
+                if(btnAbsen) { btnAbsen.disabled = true; btnAbsen.innerText = `Dibuka Pukul ${startTime}`; }
+                if(btnIzin) btnIzin.disabled = true;
+                if(btnDoSakit) btnDoSakit.disabled = true;
+            } else if (currTimeMin >= startMin && currTimeMin <= endMin) {
+                let sisaMin = endMin - currTimeMin;
+                if(sessionInfoText) sessionInfoText.innerText = `Sesi Aktif! Sisa waktu sekitar ${sisaMin} menit (Tutup pukul ${endTime} WIB).`;
+                if(homeAttStatus) { homeAttStatus.innerText = 'Belum Absen'; homeAttStatus.style.color = '#fbbf24'; }
+                if(btnAbsen) { btnAbsen.disabled = false; btnAbsen.innerText = 'Hadir'; }
+                if(btnIzin) btnIzin.disabled = false;
+                if(btnDoSakit) btnDoSakit.disabled = false;
+            } else {
+                if(sessionInfoText) sessionInfoText.innerText = `Sesi telah berakhir pada pukul ${endTime} WIB.`;
+                if(homeAttStatus) { homeAttStatus.innerText = 'Berakhir'; homeAttStatus.style.color = '#ef4444'; }
+                if(btnAbsen) btnAbsen.disabled = true;
+                if(btnIzin) btnIzin.disabled = true;
+                if(btnDoSakit) btnDoSakit.disabled = true;
+            }
+
+            if(resultBadge) resultBadge.innerHTML = '';
+            await loadPeersAttendanceRecordsLive(activeDateStr);
+        }
+
+        window.submitAttendance = async function(statusVal, reasonVal) {
+            let activeDateStr = getLocalDateString();
+            let now = new Date();
+            let absentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            let recRef = doc(db, "attendance", activeDateStr, "records", String(currentStudentId));
+            let doubleCheck = await getDoc(recRef);
+            if (doubleCheck.exists() && doubleCheck.data().status) {
+                alert('Anda sudah melakukan absensi hari ini!');
+                await checkAttendanceStatusLive();
+                return;
+            }
+
+            let payload = {
+                userId: currentStudentId,
+                name: studentData.name || studentData.nama,
+                status: statusVal,
+                absentTime: absentTime
+            };
+            if (reasonVal) payload.reason = reasonVal;
+
+            await setDoc(recRef, payload, { merge: true });
+            alert('Presensi berhasil dikirim.');
+            await checkAttendanceStatusLive();
+        };
+
+        window.openReasonModal = function(type) {
+            pendingReasonType = type;
+            document.getElementById('modalReasonTitle').innerText = `Keterangan: ${type}`;
+            document.getElementById('reasonInputText').value = '';
+            document.getElementById('reasonModal').style.display = 'flex';
+        };
+
+        window.closeReasonModal = function() {
+            document.getElementById('reasonModal').style.display = 'none';
+            pendingReasonType = '';
+        };
+
+        window.submitReasonAttendance = async function() {
+            let reasonText = document.getElementById('reasonInputText').value.trim();
+            if (!reasonText) { alert('Keterangan wajib diisi.'); return; }
+            let type = pendingReasonType;
+            closeReasonModal();
+            await submitAttendance(type, reasonText);
+        };
+
+        async function loadPeersAttendanceRecordsLive(activeDateStr) {
+            const studentSnap = await getDocs(collection(db, "siswa"));
+            let studentsList = [];
+            studentSnap.forEach(docSnap => {
+                let s = docSnap.data();
+                studentsList.push({ 
+                    userId: s.userId || s.nis || s.username || docSnap.id, 
+                    name: s.name || s.nama || 'Tanpa Nama', 
+                    position: s.position || s.jabatan || 'Anggota',
+                    photo: s.photo || '' 
+                });
+            });
+
+            const recordsSnap = await getDocs(collection(db, "attendance", activeDateStr, "records"));
+            let recordsMap = {};
+            recordsSnap.forEach(docSnap => { recordsMap[docSnap.id] = docSnap.data(); });
+
+            let tbody = document.getElementById('peersAttendanceTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            studentsList.forEach((stu, idx) => {
+                let rec = recordsMap[stu.userId] || {};
+                let status = rec.status || 'Belum Absen';
+                let timeStr = rec.absentTime || '-';
+                let reasonStr = rec.reason || '-';
+                
+                let badgeStyle = 'background:rgba(255,255,255,0.05); color:#8A99AD;';
+                if (status === 'Hadir' || status === 'Disetujui') badgeStyle = 'background:rgba(5,150,105,0.2); color:#34d399;';
+                else if (status === 'Izin' || status === 'Sakit') badgeStyle = 'background:rgba(217,119,6,0.2); color:#fbbf24;';
+                else if (status === 'Alpa' || status === 'Ditolak') badgeStyle = 'background:rgba(239,68,68,0.2); color:#ef4444;';
+
+                let avatarHtml = stu.photo ? `<img src="${stu.photo}" class="peer-avatar" alt="Avatar">` : `<div class="peer-avatar">${stu.name.charAt(0).toUpperCase()}</div>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${avatarHtml}</td>
+                        <td style="font-weight:600;">${stu.name}</td>
+                        <td><span class="role-badge">${stu.position}</span></td>
+                        <td><span class="badge" style="${badgeStyle}">${status}</span></td>
+                        <td>${timeStr}</td>
+                        <td style="color:var(--color-gray);">${reasonStr}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderStudentGrades(data) {
+            let container = document.getElementById('aspectsContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            let aspectsMap = {
+                passing: 'Passing', control: 'Control', dribbling: 'Dribbling', shooting: 'Shooting',
+                kecepatan: 'Kecepatan', stamina: 'Stamina', taktik: 'Taktik', kerjaSama: 'Kerja Sama',
+                disiplin: 'Disiplin', mental: 'Mental', akademik: 'Akademik'
+            };
+
+            let total = 0, count = 0, hasValue = false;
+
+            for (let key in aspectsMap) {
+                let val = parseFloat(data[key]) || 0;
+                total += val;
+                if (val > 0) hasValue = true;
+                count++;
+
+                container.innerHTML += `
+                    <div class="aspect-card">
+                        <div class="aspect-title">${aspectsMap[key]}</div>
+                        <div class="aspect-score">${val}</div>
+                    </div>
+                `;
+            }
+
+            let ovr = hasValue ? Math.round(total / 11) : 0;
+            document.getElementById('myOvrLarge').innerText = ovr > 0 ? `OVR ${ovr}` : 'OVR -';
+            document.getElementById('myDescLarge').innerText = getQualitativeDescription(ovr);
+            document.getElementById('homeOvrScore').innerText = ovr > 0 ? `OVR ${ovr}` : 'OVR -';
+        }
+
+        async function loadExamModule() {
+            let settingSnap = await getDoc(doc(db, "settings", "examSession"));
+            let isExamOpen = true;
+            let endTimeStr = '23:59';
+            let examDateStr = getLocalDateString();
+
+            if (settingSnap.exists()) {
+                let data = settingSnap.data();
+                isExamOpen = data.isOpen !== false;
+                if (data.endTime) endTimeStr = data.endTime;
+                if (data.date) examDateStr = data.date;
+            }
+
+            let timerDisplay = document.getElementById('examTimerDisplay');
+            let contentArea = document.getElementById('examContentArea');
+            if(!timerDisplay || !contentArea) return;
+
+            timerDisplay.innerText = `Batas Waktu Ujian Selesai Pukul: ${endTimeStr} WIB (${examDateStr})`;
+
+            // 1. Cek apakah Admin menutup ujian secara manual (Realtime Check)
+            if (!isExamOpen) {
+                contentArea.innerHTML = `
+                    <div style="text-align:center; padding:30px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px;">
+                        <i class="fa-solid fa-lock" style="font-size:40px; color:#ef4444; margin-bottom:10px;"></i>
+                        <h3 style="color:#ef4444;">Ujian Ditutup</h3>
+                        <p style="color:var(--color-gray); margin-top:5px; font-size:13px;">Sesi ujian saat ini ditutup oleh Pelatih/Admin.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 2. Cek apakah siswa sudah pernah mengerjakan ujian
+            let gradeSnap = await getDoc(doc(db, "grades", String(currentStudentId)));
+            let existingAkademik = gradeSnap.exists() ? parseFloat(gradeSnap.data().akademik) : NaN;
+
+            if (!isNaN(existingAkademik) && existingAkademik > 0) {
+                contentArea.innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <i class="fa-solid fa-circle-check" style="font-size:40px; color:#34d399; margin-bottom:10px;"></i>
+                        <h3>Ujian Selesai</h3>
+                        <p style="color:var(--color-gray); margin-top:5px;">Nilai Akademik Anda: <b style="color:#fff; font-size:18px;">${existingAkademik}</b></p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 3. Cek Waktu Habis (Timer)
+            let now = new Date();
+            let currTimeMin = now.getHours() * 60 + now.getMinutes();
+            let [eH, eM] = endTimeStr.split(':').map(Number);
+            let endTotalMin = eH * 60 + eM;
+            let todayStr = getLocalDateString();
+            let isTimeUp = (todayStr > examDateStr) || (todayStr === examDateStr && currTimeMin > endTotalMin);
+
+            if (isTimeUp) {
+                contentArea.innerHTML = `
+                    <div style="text-align:center; padding:30px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px;">
+                        <i class="fa-solid fa-hourglass-end" style="font-size:40px; color:#ef4444; margin-bottom:10px;"></i>
+                        <h3 style="color:#ef4444;">Waktu Ujian Telah Habis</h3>
+                        <p style="color:var(--color-gray); margin-top:5px; font-size:13px;">Batas waktu pengumpulan ujian pukul ${endTimeStr} WIB telah terlewati.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Tampilkan soal jika dibuka & belum habis waktu
+            let questionsSnap = await getDocs(collection(db, "examQuestions"));
+            if (questionsSnap.empty) {
+                contentArea.innerHTML = '<p style="color:var(--color-gray);">Belum ada soal ujian tersedia dari coach.</p>';
+                return;
+            }
+
+            let html = `<form id="examForm" onsubmit="submitExam(event)">`;
+            let qIndex = 1;
+            let questionsList = [];
+            questionsSnap.forEach(docSnap => {
+                questionsList.push({ id: docSnap.id, ...docSnap.data() });
+                let d = docSnap.data();
+                html += `
+                    <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--color-border);">
+                        <p style="font-weight:600; margin-bottom:10px;">${qIndex++}. ${d.question}</p>
+                        <label style="display:block; margin-bottom:6px; font-size:13px; cursor:pointer;"><input type="radio" name="q_${docSnap.id}" value="A" required> A. ${d.optA}</label>
+                        <label style="display:block; margin-bottom:6px; font-size:13px; cursor:pointer;"><input type="radio" name="q_${docSnap.id}" value="B"> B. ${d.optB}</label>
+                        <label style="display:block; margin-bottom:6px; font-size:13px; cursor:pointer;"><input type="radio" name="q_${docSnap.id}" value="C"> C. ${d.optC}</label>
+                        <label style="display:block; cursor:pointer;"><input type="radio" name="q_${docSnap.id}" value="D"> D. ${d.optD}</label>
+                    </div>
+                `;
+            });
+            html += `<button type="submit" class="btn-primary" style="width:100%;">Kirim Jawaban</button></form>`;
+            contentArea.innerHTML = html;
+
+            window.submitExam = async function(e) {
+                e.preventDefault();
+                let correctCount = 0;
+                let totalQ = questionsList.length;
+
+                questionsList.forEach(q => {
+                    let selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                    if (selected && selected.value === q.correct) correctCount++;
+                });
+
+                let finalScore = Math.round((correctCount / totalQ) * 100);
+
+                let gradeRef = doc(db, "grades", String(currentStudentId));
+                let gradeSnap = await getDoc(gradeRef);
+                let existingData = gradeSnap.exists() ? gradeSnap.data() : {};
+                existingData.akademik = finalScore;
+
+                let aspects = ['passing', 'control', 'dribbling', 'shooting', 'kecepatan', 'stamina', 'taktik', 'kerjaSama', 'disiplin', 'mental', 'akademik'];
+                let sum = 0;
+                aspects.forEach(k => { sum += parseFloat(existingData[k]) || 0; });
+                existingData.average = Math.round(sum / 11);
+
+                await setDoc(gradeRef, existingData, { merge: true });
+                alert(`Ujian selesai. Skor Akademik: ${finalScore}`);
+                await loadExamModule();
+            };
+        }
+
+        async function loadRankingData(studentSnapshot) {
+            let studentSnap = studentSnapshot || await getDocs(collection(db, "siswa"));
+            let studentsMap = {};
+            studentSnap.forEach(docSnap => {
+                let s = docSnap.data();
+                let key = s.userId || s.nis || s.username || docSnap.id;
+                studentsMap[key] = {
+                    name: s.name || s.nama || 'Tanpa Nama',
+                    position: s.position || s.jabatan || 'Anggota'
+                };
+            });
+
+            const gradeSnap = await getDocs(collection(db, "grades"));
+            let gradesMap = {};
+            gradeSnap.forEach(docSnap => { gradesMap[docSnap.id] = docSnap.data(); });
+
+            let listToRank = [];
+            for (let uId in studentsMap) {
+                let sObj = studentsMap[uId];
+                let d = gradesMap[uId] || {};
+                let ovr = Math.round(parseFloat(d.average) || 0);
+                listToRank.push({ name: sObj.name, position: sObj.position, ovr: ovr });
+            }
+
+            listToRank.sort((a, b) => b.ovr - a.ovr);
+            let tbody = document.getElementById('rankingTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if (listToRank.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--color-gray);">Belum ada data peringkat.</td></tr>`;
+                return;
+            }
+
+            listToRank.forEach((item, index) => {
+                let medal = index === 0 && item.ovr > 0 ? '🥇' : (index === 1 && item.ovr > 0 ? '🥈' : (index === 2 && item.ovr > 0 ? '🥉' : `#${index + 1}`));
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="badge" style="background:rgba(255,255,255,0.05); color:#fff;">${medal}</span></td>
+                        <td style="font-weight:600;">${item.name}</td>
+                        <td><span class="role-badge">${item.position}</span></td>
+                        <td><span class="badge success">OVR ${item.ovr > 0 ? item.ovr : '-'}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderRosters(snapshot) {
+            let activeDateStr = getLocalDateString();
+            let container = document.getElementById('homeRosterContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            let list = [];
+            snapshot.forEach(docSnap => { list.push({ id: docSnap.id, ...docSnap.data() }); });
+
+            if (list.length === 0) {
+                container.innerHTML = `<p style="color:var(--color-gray); text-align:center; padding:10px;">Belum ada jadwal kalender real-time.</p>`;
+                document.getElementById('homeSessionNameDisplay').innerText = 'Belum Ada Jadwal';
+                document.getElementById('scheduleTitleDisplay').innerText = '-';
+                return;
+            }
+
+            list.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            let todayRoster = list.find(r => r.date === activeDateStr) || list[0];
+            if (todayRoster) {
+                document.getElementById('homeSessionNameDisplay').innerText = todayRoster.title;
+                document.getElementById('scheduleTitleDisplay').innerText = todayRoster.desc || todayRoster.title;
+                document.getElementById('scheduleTimeDisplay').innerText = `${todayRoster.timeStart || '08:00'} - ${todayRoster.timeEnd || '11:00'} WIB (${todayRoster.date})`;
+            }
+
+            list.forEach(r => {
+                let timeStr = r.timeStart && r.timeEnd ? `${r.timeStart} - ${r.timeEnd} WIB` : 'Waktu fleksibel';
+                let isToday = r.date === activeDateStr;
+                container.innerHTML += `
+                    <div style="background:${isToday ? 'rgba(5,150,105,0.1)' : 'rgba(255,255,255,0.02)'}; border:1px solid ${isToday ? '#059669' : 'var(--color-border)'}; padding:12px; border-radius:8px; margin-bottom:8px;">
+                        <span style="font-size:11px; color:#34d399; font-weight:600;">Tanggal: ${r.date} ${isToday ? '(HARI INI)' : ''} | Pukul: ${timeStr}</span>
+                        <h4 style="font-size:14px; font-weight:700; margin:4px 0;">${r.title}</h4>
+                        <p style="font-size:12px; color:var(--color-gray);">${r.desc || '-'}</p>
+                    </div>
+                `;
+            });
+        }
+
+        initStudentPortalRealtime();
+    </script>
+</body>
+</html>
