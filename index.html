@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Home Base Club</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#fef2f2',
+                100: '#fee2e2',
+                500: '#ef4444',
+                600: '#dc2626',
+                700: '#b91c1c',
+              },
+            },
+            boxShadow: {
+              'soft': '0 20px 40px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.25)',
+              'pill': '0 4px 14px 0 rgba(220, 38, 38, 0.4)',
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+        body { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden;
+            background-color: #0f172a;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .bg-video {
+            position: absolute;
+            top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            z-index: -2;
+        }
+
+        .bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: -1;
+        }
+
+        .login-card { 
+            width: 100%; max-width: 412px; 
+            background: rgba(255, 255, 255, 0.12); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            padding: 35px; 
+            border-radius: 32px; 
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.25); 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative; 
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+
+        .iofit-input {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            color: #ffffff;
+        }
+        .iofit-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .iofit-input:focus {
+            border-color: #ef4444;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop playsinline class="bg-video">
+        <source src="latar.mp4" type="video/mp4">
+        Browser Anda tidak mendukung pemutaran video latar belakang.
+    </video>
+    <div class="bg-overlay"></div>
+
+    <div class="login-card">
+        <!-- Header dengan Logo Rapih & Melingkar Sempurna -->
+        <div class="flex flex-col items-center justify-center mb-6 text-center">
+            <div class="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg mb-3 p-2 overflow-hidden">
+                <img src="logo.png" alt="Logo Home Base Club" class="w-full h-full object-cover rounded-full" onerror="this.src='https://via.placeholder.com/80/dc2626/ffffff?text=HBC'">
+            </div>
+            <p class="text-[10px] text-rose-300 font-bold tracking-widest uppercase mb-1">HOME BASE CLUB</p>
+            <h2 class="text-white text-xl font-extrabold tracking-tight">Login Portal Akademik</h2>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1.5">Username / NIS / User ID:</label>
+                <input type="text" id="loginId" placeholder="Masukkan ID atau username..." class="w-full px-4 py-3 text-sm iofit-input">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-200 mb-1.5">Password:</label>
+                <input type="password" id="loginPass" placeholder="Masukkan password..." class="w-full px-4 py-3 text-sm iofit-input">
+            </div>
+
+            <button onclick="handleUnifiedLogin()" class="w-full mt-2 py-3.5 bg-gradient-to-r from-brand-600 to-rose-500 text-white font-bold text-sm rounded-2xl shadow-pill active:scale-[0.98] transition flex items-center justify-center gap-2">
+                <i data-lucide="log-in" class="w-4 h-4"></i> Masuk Sistem
+            </button>
+            
+            <div class="text-center pt-2">
+                <p class="text-[11px] text-slate-300 font-medium">Sistem otomatis mendeteksi akun Admin atau Pemain</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logika Asli (Firebase & Unified Login Terakurat) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBABI21WSzwx0uVln_SkLlHrLWuUgJyclQ",
+            authDomain: "absen-pemain.firebaseapp.com",
+            projectId: "absen-pemain",
+            storageBucket: "absen-pemain.firebasestorage.app",
+            messagingSenderId: "714361263502",
+            appId: "1:714361263502:web:ab6fc668eb4d2b09b680df",
+            measurementId: "G-RF6G474HSY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Inisialisasi ikon Lucide
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+
+        window.handleUnifiedLogin = async function() {
+            let inputId = document.getElementById('loginId').value.trim();
+            let inputPass = document.getElementById('loginPass').value.trim();
+
+            if (!inputId || !inputPass) {
+                alert('ID dan Password wajib diisi!');
+                return;
+            }
+
+            try {
+                // 1. KONDISI ADMIN BAWAAN
+                if (inputId === "admin" && inputPass === "admin123") {
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    localStorage.setItem('role', 'admin');
+                    window.location.href = 'admin.html';
+                    return;
+                }
+
+                // 2. KONDISI ADMIN DARI FIRESTORE SETTINGS
+                const adminRef = doc(db, "settings", "adminProfile");
+                const adminSnap = await getDoc(adminRef);
+                if (adminSnap.exists()) {
+                    let adData = adminSnap.data();
+                    if (adData.username && adData.username === inputId && String(adData.password) === String(inputPass)) {
+                        localStorage.setItem('adminLoggedIn', 'true');
+                        localStorage.setItem('role', 'admin');
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                }
+
+                // 3. KONDISI ADMIN DARI KOLEKSI ADMINS
+                const adminQuery = query(collection(db, "admins"), where("username", "==", String(inputId)));
+                const adminSnapshot = await getDocs(adminQuery);
+                if (!adminSnapshot.empty) {
+                    let adminData = adminSnapshot.docs[0].data();
+                    if (String(adminData.password).trim() === String(inputPass)) {
+                        localStorage.setItem('adminLoggedIn', 'true');
+                        localStorage.setItem('role', 'admin');
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                }
+
+                // 4. KONDISI SISWA - BERDASARKAN ID DOKUMEN
+                let studentDocRef = doc(db, "siswa", String(inputId));
+                let studentSnap = await getDoc(studentDocRef);
+
+                if (studentSnap.exists()) {
+                    let studentData = studentSnap.data();
+                    let realPass = studentData.password || studentData.pass || '';
+                    if (String(realPass).trim() === String(inputPass)) {
+                        let uniqueId = studentDocRef.id;
+                        let name = studentData.name || studentData.nama || 'Siswa';
+
+                        // Menyimpan semua key yang dibutuhkan oleh siswa.html
+                        localStorage.setItem('userId', String(uniqueId));
+                        localStorage.setItem('userName', name);
+                        localStorage.setItem('role', 'student');
+                        localStorage.setItem('studentLoggedInId', String(uniqueId));
+
+                        window.location.href = 'siswa.html';
+                        return;
+                    } else {
+                        alert('Password Siswa salah!');
+                        return;
+                    }
+                } else {
+                    // 5. KONDISI SISWA - PENCARIAN FIELD PADA SELURUH KOLEKSI SISWA
+                    const querySnapshot = await getDocs(collection(db, "siswa"));
+                    let foundStudent = null;
+                    let foundDocId = null;
+
+                    querySnapshot.forEach(docSnap => {
+                        let data = docSnap.data();
+                        let uId = data.userId || data.nis || data.username || docSnap.id;
+                        if (String(uId).toLowerCase() === String(inputId).toLowerCase()) {
+                            foundStudent = data;
+                            foundDocId = docSnap.id;
+                        }
+                    });
+
+                    if (foundStudent) {
+                        let realPass = foundStudent.password || foundStudent.pass || '';
+                        if (String(realPass).trim() === String(inputPass)) {
+                            let uniqueId = foundDocId;
+                            let name = foundStudent.name || foundStudent.nama || 'Siswa';
+
+                            // Menyimpan semua key yang dibutuhkan oleh siswa.html
+                            localStorage.setItem('userId', String(uniqueId));
+                            localStorage.setItem('userName', name);
+                            localStorage.setItem('role', 'student');
+                            localStorage.setItem('studentLoggedInId', String(uniqueId));
+
+                            window.location.href = 'siswa.html';
+                            return;
+                        } else {
+                            alert('Password Siswa salah!');
+                            return;
+                        }
+                    }
+                }
+
+                alert('Akun tidak ditemukan (Username / ID tidak terdaftar di database)!');
+
+            } catch (e) {
+                alert('Terjadi kesalahan koneksi ke server: ' + e.message);
+                console.error("Error detail:", e);
+            }
+        };
+    </script>
+</body>
+</html>
