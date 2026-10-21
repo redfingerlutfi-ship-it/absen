@@ -568,7 +568,6 @@
 
             container.innerHTML = `
                 <div class="space-y-4 text-xs">
-                    <!-- TAMPILAN QR CODE PRESENSI DI TENGAH -->
                     <div class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100 text-center space-y-2">
                         <p class="font-bold text-indigo-900">QR Code Presensi (${today})</p>
                         <div id="qrCodeContainer" class="flex justify-center my-2 p-2 bg-white rounded-xl shadow-sm inline-block"></div>
@@ -797,25 +796,34 @@
                     </div>
                 `;
             } else if (featureKey === 'examcontrol') {
-                titleElem.innerText = "Kontrol & Reset Ujian AI";
+                titleElem.innerText = "Kontrol Ujian AI Sepak Bola";
                 let examSnap = await getDoc(doc(db, "settings", "examSession"));
                 let isExamOpen = examSnap.exists() ? examSnap.data().isOpen : false;
 
                 container.innerHTML = `
-                    <div class="space-y-3 text-xs">
-                        <div class="p-3 bg-amber-50 border border-amber-100 rounded-2xl text-amber-800">
-                            <p class="font-bold mb-1"><i class="fa-solid fa-robot mr-1"></i> Ujian AI Harian</p>
-                            <p>Admin dapat membuka sesi, mereset ujian siswa, atau mengacak ulang paket soal secara live.</p>
+                    <div class="space-y-4 text-xs">
+                        <div class="p-3 bg-amber-50 border border-amber-100 rounded-2xl text-amber-900 leading-relaxed">
+                            <p class="font-bold mb-1"><i class="fa-solid fa-robot text-amber-600 mr-1"></i> AI Question Generator Active</p>
+                            <p class="text-[11px] text-slate-600">Sistem AI secara otomatis meracik dan mengacak 10 soal unik dari topik taktik, teknik, dan aturan sepak bola untuk setiap siswa. Pelatih tidak perlu membuat soal secara manual.</p>
                         </div>
+
                         <div class="p-3 bg-slate-50 border border-slate-100 rounded-2xl flex justify-between items-center">
-                            <span>Status Sesi: <b class="${isExamOpen ? 'text-emerald-600' : 'text-rose-600'}">${isExamOpen ? 'BUKA' : 'TUTUP'}</b></span>
-                            <button class="btn-primary ${isExamOpen ? 'bg-rose-600' : 'bg-emerald-600'}" style="width:auto; padding:6px 12px;" onclick="playClickSound(); toggleExamSessionStatus()">
+                            <div>
+                                <b>Status Sesi Ujian Harian</b>
+                                <p class="text-[10px] text-slate-400">Kontrol akses masuk ujian siswa</p>
+                            </div>
+                            <button class="btn-primary ${isExamOpen ? 'bg-rose-600' : 'bg-emerald-600'}" style="width:auto; padding:6px 14px;" onclick="playClickSound(); toggleExamSessionStatus()">
                                 ${isExamOpen ? 'Tutup Sesi' : 'Buka Sesi Ujian'}
                             </button>
                         </div>
-                        <button class="btn-primary bg-indigo-600 hover:bg-indigo-700" onclick="playClickSound(); resetAndShuffleAiExams()">
-                            <i class="fa-solid fa-shuffle mr-1"></i> Reset & Acak Soal Ujian AI (Live)
-                        </button>
+
+                        <div class="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-2">
+                            <b>Reset & Acak Ulang AI</b>
+                            <p class="text-[10px] text-slate-500">Gunakan tombol ini jika ingin menghapus riwayat ujian hari ini dan memaksa AI meracik paket soal acak baru secara live.</p>
+                            <button class="btn-primary bg-indigo-600 hover:bg-indigo-700" onclick="playClickSound(); resetAndShuffleAiExams()">
+                                <i class="fa-solid fa-shuffle mr-1"></i> Reset & Acak Soal Ujian AI Sekarang
+                            </button>
+                        </div>
                     </div>
                 `;
             } else if (featureKey === 'zoomMeeting') {
@@ -865,7 +873,7 @@
         window.closeSubMenuModal = function() { document.getElementById('subMenuModal').style.display = 'none'; };
 
         window.resetAndShuffleAiExams = async function() {
-            if(confirm("Apakah Anda ingin mereset seluruh hasil ujian siswa hari ini dan mengacak ulang paket soal AI?")) {
+            if(confirm("Apakah Anda ingin mereset seluruh hasil ujian siswa hari ini dan mengacak ulang paket soal AI secara serentak?")) {
                 let today = getLocalDateString();
                 let examResultsSnap = await getDocs(collection(db, "examResults"));
                 examResultsSnap.forEach(async (d) => {
