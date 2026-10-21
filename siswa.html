@@ -308,7 +308,7 @@
             </div>
         </div>
 
-        <!-- TAB 2: PROFIL (DESAIN ELEGAN SEPERTI GAMBAR REFERENSI ADMIN) -->
+        <!-- TAB 2: PROFIL -->
         <div id="tab-me" class="content-tab space-y-5">
             <h2 class="text-base font-extrabold text-slate-900"><i class="fa-solid fa-user text-indigo-600 mr-2"></i> Profil Saya</h2>
 
@@ -755,7 +755,6 @@
                 if(!st.isExamOpen) {
                     container.innerHTML = `<div class="text-center p-4 text-rose-600 font-extrabold text-xs">Ujian AI belum dibuka oleh Coach.</div>`;
                 } else {
-                    // Cek status pengerjaan real-time untuk masing-masing level
                     Promise.all([
                         getDoc(doc(db, "examResults", `${currentUserId}_easy_${today}`)),
                         getDoc(doc(db, "examResults", `${currentUserId}_medium_${today}`)),
@@ -884,7 +883,6 @@
             document.getElementById('subMenuModal').style.display = 'none';
         };
 
-        // PROTEKSI: CEK APAKAH SUDAH UJIAN SEBELUM MEMULAI COUNTDOWN
         window.startAiExamWithCountdown = async function(level, minutes) {
             let today = getLocalDateString();
             
@@ -960,19 +958,28 @@
             let questionsBox = document.getElementById('examQuestionsBox');
             
             let correctCount = 0;
+            let totalQuestions = 10;
+
             if (questionsBox) {
-                questionsBox.querySelectorAll('[data-question-idx]').forEach(box => {
-                    let idx = parseInt(box.getAttribute('data-question-idx'));
-                    let correctAns = box.getAttribute('data-correct-ans');
-                    let selected = box.querySelector(`input[name="ai_q_${idx}"]:checked`);
-                    if (selected && selected.value === correctAns) {
-                        correctCount++;
+                let questionBlocks = questionsBox.querySelectorAll('[data-question-idx]');
+                totalQuestions = questionBlocks.length || 10;
+
+                questionBlocks.forEach(box => {
+                    let idx = box.getAttribute('data-question-idx');
+                    let correctAns = (box.getAttribute('data-correct-ans') || '').trim();
+                    let selectedInput = box.querySelector(`input[name="ai_q_${idx}"]:checked`);
+                    
+                    if (selectedInput) {
+                        let userAns = (selectedInput.value || '').trim();
+                        if (userAns === correctAns) {
+                            correctCount++;
+                        }
                     }
                 });
             }
 
             let maxScore = level === 'hard' ? 150 : (level === 'medium' ? 90 : 60);
-            let newlyEarnedScore = Math.round((correctCount / 10) * maxScore);
+            let newlyEarnedScore = Math.round((correctCount / totalQuestions) * maxScore);
 
             closeSubMenuModal();
             let animScore = document.getElementById('animResultScore');
@@ -980,7 +987,7 @@
             let animOverlay = document.getElementById('examResultAnimOverlay');
 
             if (animScore) animScore.innerText = `+${newlyEarnedScore} Poin`;
-            if (animDetails) animDetails.innerText = `Benar ${correctCount} dari 10 Soal (${level.toUpperCase()})`;
+            if (animDetails) animDetails.innerText = `Benar ${correctCount} dari ${totalQuestions} Soal (${level.toUpperCase()})`;
             if (animOverlay) animOverlay.style.display = 'flex';
 
             try {
@@ -988,7 +995,13 @@
                 let today = getLocalDateString();
                 
                 await setDoc(doc(db, "examResults", `${activeId}_${level}_${today}`), {
-                    userId: activeId, level: level, date: today, earnedAcademicScore: newlyEarnedScore, correctCount: correctCount, createdAt: new Date().toISOString()
+                    userId: activeId, 
+                    level: level, 
+                    date: today, 
+                    earnedAcademicScore: newlyEarnedScore, 
+                    correctCount: correctCount, 
+                    totalQuestions: totalQuestions,
+                    createdAt: new Date().toISOString()
                 }, { merge: true });
 
                 let gradeRef = doc(db, "grades", activeId);
@@ -1013,7 +1026,7 @@
                 await setDoc(gradeRef, {
                     academicScore: finalAcademicScore, 
                     ovr: newOvr, 
-                    note: `[Ujian ${level.toUpperCase()} - ${today}]: Benar ${correctCount}/10 (+${newlyEarnedScore} poin). Total Akademik: ${finalAcademicScore}/300.`,
+                    note: `[Ujian ${level.toUpperCase()} - ${today}]: Benar ${correctCount}/${totalQuestions} (+${newlyEarnedScore} poin). Total Akademik: ${finalAcademicScore}/300.`,
                     updatedAt: new Date().toISOString()
                 }, { merge: true });
 
@@ -1131,7 +1144,6 @@
             alert('Aju banding berhasil dikirim!');
         };
 
-        // REALTIME LISTENERS SINKRONISASI DATABASE
         function initRealtimeSiswa() {
             let today = getLocalDateString();
 
